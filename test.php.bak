@@ -11,9 +11,6 @@
   <meta name="Keywords" content="">
   <meta name="Description" content="">
   <title>오늘은 첫번째 php수업</title>
-  <style>
-  .gugu{background: red;}
-  </style>
  </head>
  <body>
  <ul>

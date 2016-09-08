@@ -11,7 +11,7 @@ and open the template in the editor.
     </head>
     <body>
         <?php
-        2번째 주입니다.
+        // put your code here
         ?>
     </body>
 </html>
