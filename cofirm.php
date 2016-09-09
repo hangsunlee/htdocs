@@ -1,6 +1,6 @@
 <?php
+//include("testsession.php");
 session_start();
-$_SESSION["name"]=$_POST["name"]; 
 ?>
 <!DOCTYPE html>
 <html>
@@ -10,7 +10,11 @@ $_SESSION["name"]=$_POST["name"];
     </head>
     <body>
         <?php
-        // put your code here
-        ?>
+                print "이름:";
+                print $_SESSION["name"];
+                print "등급:";
+                print $_SESSION["level"];
+        
+         ?>
     </body>
 </html>
