@@ -38,7 +38,26 @@ $(document).ready(function(){
     $(".btn_sel").click(function(){
       $(".syear").css("display","block");
   });
-  
+    var form=$(".form");
+    var uid=$("#userid");
+    var pw=$("#password");
+    var re_id = /^[a-z0-9_-]{3,16}$/; // 아이디 검사식
+    var re_pw=/^[a-z0-9_-]{8,16}/;//영문, 숫자, 언더스코어(_), 하이픈(-)이 포함된 6~18 문자.
+    form.submit(function(){
+        if(re_id.test(uid.val())!==true){
+        alert("사용할 수 없는 아이디입니다.");
+        uid.focus();
+        return false;
+        }
+        else if(re_pw.test(pw.val())!==true){
+        alert("사용할수없는 비밀번호입니다.");
+        pw.focus();
+        return false;
+        }
+        
+    });  
 }); 
+
+
 
 
