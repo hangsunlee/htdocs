@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+<?php
+session_start();
+?>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -6,53 +9,59 @@
 <title>KCC 금강컨트리클럽</title>
 <link rel="stylesheet" type="text/css" href="css/kcc_style.css" />
 <script src="http://code.jquery.com/jquery-latest.js"></script>
-<script type="text/javascript">
-	//jquery onload
-	$(function(){
-		//Html parsing 이 다 된 후 호출되는 영역.
-	  $(".lnb li a").mouseover(function(){
-	  	$(".lnb li a.selected").removeClass("selected");
-	  	$(this).addClass("selected");
-	  });
-	});
+<script src="js/select.js"></script>
+<script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
+<script>
+    //본 예제에서는 도로명 주소 표기 방식에 대한 법령에 따라, 내려오는 데이터를 조합하여 올바른 주소를 구성하는 방법을 설명합니다.
+    function sample4_execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
 
-	function fn_smsclick(at)
-	{
-		if(at == "Y"){
-			// agreement_y 찾아서 checked="checked" 부여한다.
-			var agreeY = document.getElementById("agreement_y");
-			agreeY.setAttribute("checked", "checked");
+                // 도로명 주소의 노출 규칙에 따라 주소를 조합한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var fullRoadAddr = data.roadAddress; // 도로명 주소 변수
+                var extraRoadAddr = ''; // 도로명 조합형 주소 변수
 
-			// agree_fake_y 찾아서 class 명을 rdo_on 으로 부여한다.
-			var fakeY = document.getElementById("agree_fake_y");
-			fakeY.setAttribute("class", "rdo_on");
+                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명이 있고, 공동주택일 경우 추가한다.
+                if(data.buildingName !== '' && data.apartment === 'Y'){
+                   extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 도로명, 지번 조합형 주소가 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                if(extraRoadAddr !== ''){
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+                // 도로명, 지번 주소의 유무에 따라 해당 조합형 주소를 추가한다.
+                if(fullRoadAddr !== ''){
+                    fullRoadAddr += extraRoadAddr;
+                }
 
-			// agreement_n 찾아서 checked="checked" 삭제한다.
-			var agreeN = document.getElementById("agreement_n");
-			agreeN.removeAttribute("checked");
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('sample4_postcode').value = data.zonecode; //5자리 새우편번호 사용
+                document.getElementById('sample4_roadAddress').value = fullRoadAddr;
+                document.getElementById('sample4_jibunAddress').value = data.jibunAddress;
 
-			// agree_fake_n 찾아서 class 명을 rdo_off 부여한다.
-			var fakeN = document.getElementById("agree_fake_n");
-			fakeN.setAttribute("class", "rdo_off");
-		}
-		else if(at == "N"){
-			// agreement_y 찾아서 checked="checked" 삭제한다
-			var agreeY = document.getElementById("agreement_y");
-			agreeY.removeAttribute("checked");
+                // 사용자가 '선택 안함'을 클릭한 경우, 예상 주소라는 표시를 해준다.
+                if(data.autoRoadAddress) {
+                    //예상되는 도로명 주소에 조합형 주소를 추가한다.
+                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
+                    document.getElementById('guide').innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
 
-			// agree_fake_y 찾아서 class 명을 rdo_off 로 부여한다.
-			var fakeY = document.getElementById("agree_fake_y");
-			fakeY.setAttribute("class", "rdo_off");
+                } else if(data.autoJibunAddress) {
+                    var expJibunAddr = data.autoJibunAddress;
+                    document.getElementById('guide').innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
 
-			// agreement_n 찾아서 checked="checked" 부여한다.
-			var agreeN = document.getElementById("agreement_n");
-			agreeN.setAttribute("checked", "checked");
-
-			// agree_fake_n 찾아서 class 명을 rdo_on 부여한다.
-			var fakeN = document.getElementById("agree_fake_n");
-			fakeN.setAttribute("class", "rdo_on");
-		}
-	}
+                } else {
+                    document.getElementById('guide').innerHTML = '';
+                }
+            }
+        }).open();
+    }
 </script>
 </head>
 <body>
@@ -72,7 +81,7 @@
 		</h1>			
 		<div id="site_gnb">	
 			<ul class="gnb_menu">
-			<li>김윤미님 환영합니다</li>
+			<li><?=$_SESSION['']?>님 환영합니다</li>
 			<li><a href="#">회원정보수정</a></li>
 			<li><a href="#">채팅룸</a></li>
 			<li><a href="#">로그아웃</a></li>
@@ -177,16 +186,17 @@
 							<p class="tip"><em>*</em>표시는 필수입력 항목입니다.</p>
 						</div>					
 						<div class="enter_area">
+                                                    <form action="member.php" method="post">
 						<fieldset>
 							<table class="enter_form">
 							<caption><span>회원정보 입력</span></caption>	
 							<tr>
 								<th><label for="ko_name">한글이름</label><em>*</em></th>
-								<td><input type="text" id="ko_name" class="inptxt"></td>
+								<td><input type="text" id="ko_name" name="ko_name" class="inptxt"></td>
 							</tr>	
 							<tr>
 								<th><label for="eg_name">영문이름</label></th>
-								<td><input type="text" id="eg_name" class="inptxt"></td>
+								<td><input type="text" id="eg_name" name="eg_name" class="inptxt"></td>
 							</tr>
 							<tr>
 								<th><span>생년월일</span><em>*</em></th>
@@ -196,11 +206,8 @@
 											<span class="sel_op">1984</span>
 											<a href="#" class="btn_sel"><span class="sp_ly ly_off"></span></a>
 										</p>
-										<ul>
-											<li><a href="#">1987</a></li>
-											<li><a href="#">1986</a></li>
-											<li><a href="#">1985</a></li>
-											<li><a href="#">1984</a></li>
+										<ul class="syear list1">
+											
 										</ul>
 									</div>
 									<span class="year_txt">년</span>
@@ -274,15 +281,17 @@
 								<th><span>전화번호</span></th>
 								<td>
 									<div class="sel_box phone">
+                                                                            <input type="hidden" name="tel1" value="010">
 										<p>
 											<span class="sel_op">010</span>
-											<a href="#" class="btn_sel"><span class="sp_ly ly_off"></span></a>
+                                                                                        <button type="button" class="btn_sel">
+											<span class="sp_ly ly_off"></span></button>
 										</p>
-										<ul>
-                                                                                    <li name="tel1" value="010">010</li>
-											<li name="tel1">011</li>
-											<li name="tel1">016</li>
-											<li name="tel1">017</li>
+										<ul class="list1">
+											<li><a href="#">010</a></li>
+											<li><a href="#">011</a></li>
+											<li><a href="#">016</a></li>
+											<li><a href="#">017</a></li>
 										</ul>
 									</div>
 									<span class="hyphen">-</span>
@@ -317,12 +326,12 @@
 								<th><span>SMS 수신여부</span><em>*</em></th>
 								<td>
 									<div class="rdo_wrap">
-										<span class="rdo_btn" onclick="fn_smsclick('Y');">
-										<input type="radio" name="agreement" id="agreement_y" checked="checked" value="">
+										<span class="rdo_btn">
+										<input type="radio" name="agreement" id="agreement_y"value="">
 										<span class="rdo_on" id="agree_fake_y"></span>
 										</span>
 										<label for="agreement_y">예</label>
-										<span class="rdo_btn" onclick="fn_smsclick('N');">
+										<span class="rdo_btn"">
 										<input type="radio" name="agreement" id="agreement_n" value="">
 										<span class="rdo_off" id="agree_fake_n"></span>
 										</span>
@@ -340,31 +349,26 @@
 							<tr>
 								<th><span>자택 우편번호</span><em>*</em></th>
 								<td>
-									<input type="text" id="h_postcode1" class="inptxt w23">		
-									<span class="hyphen">-</span>
-									<input type="text" id="h_postcode2" class="inptxt w23">
-									<a href="#" class="btn_img btn_cnfrm"><span class="btn_img">우편번호 찾기</span></a>
+                                                                                                                                                                                            <input type="text"  id="sample4_postcode" placeholder="우편번호" class="inptxt w90" readonly>
+									<a href="#" class="btn_img btn_cnfrm" onclick="sample4_execDaumPostcode()"><span class="btn_img">우편번호 찾기</span></a>
 								</td>
 							</tr>
 							<tr>
 								<th><label for="home_addr1">자택주소</label><em>*</em></th>
-								<td>
-									<p><input type="text" id="home_addr1" class="inptxt w416"></p>						
-									<p><input type="text" id="home_addr2" title="자택 상세주소" class="inptxt w416 gap"></p>
+								<td>						
+									<p>
+                                                                                                                                                                                                    <input type="text" id="sample4_roadAddress" placeholder="도로명주소"  class="inptxt w416 gap"  readonly>
+                                                                                                                                                                                                    <input type="text" id="sample4_jibunAddress" placeholder="지번주소"  class="inptxt w416 gap"  readonly>
+                                                                                                                                                                                                    <input type="text" id="home_addr2" title="자택 상세주소" class="inptxt w416 gap">
+                                                                                                                                                                                            </p>
 								</td>
 							</tr>			
 							<tr>
 								<th><span>DM발송처</span><em>*</em></th>
 								<td class="rdo_wrap">
-									<span class="rdo_btn">
-									<input type="radio" name="dmsend" id="home" checked="checked">
-									<span class="rdo_on"></span>
-									</span>
+									<input type="radio" name="dmsend" id="home">
 									<label for="home">자택</label>
-									<span class="rdo_btn">
 									<input type="radio" name="dmsend" id="office">
-									<span class="rdo_off"></span>
-									</span>
 									<label for="office">직장</label>
 								</td>
 							</tr>										
@@ -525,8 +529,9 @@
 					</div>
 					<div class="btn_wrap">
 						<a href="#" class="sp_sub btn_cancle">취소</a>
-						<a href="#" class="sp_sub btn_next">다음</a>
+                                                <button type="submit" class="sp_sub btn_next">다음 </button>
 					</div>
+</form>
 				</div>
 				</div>	
 		</div>	
